@@ -72,6 +72,7 @@ app.get('/', async (req: Request, res: Response) => {
   return res.send({ data: result.data });
 });
 
+// batch get
 app.get('/batch', async (req: Request, res: Response) => {
   const result = await sheet.spreadsheets.values.batchGet({
     spreadsheetId: GOOGLE_LIVE_SHEET_ID,
@@ -82,6 +83,26 @@ app.get('/batch', async (req: Request, res: Response) => {
 
   return res.send({ data: result.data });
 });
+
+// update/insert ....
+app.patch('/', async (req: Request, res: Response) => {
+  await sheet.spreadsheets.values.update({
+    spreadsheetId: GOOGLE_LIVE_SHEET_ID,
+    auth: auth,
+    range: req.body.range,
+    valueInputOption: 'RAW',
+    requestBody: {
+      values: req.body.values,
+    },
+  });
+
+  return res.send({
+    success: true,
+    message: 'Sheet updated successfully',
+    status: 200,
+  });
+});
+
 
 //#region Server setup
 
