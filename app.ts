@@ -3,6 +3,7 @@ import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import 'express-async-errors';
 import { auth, BASE_URL, GOOGLE_LIVE_SHEET_ID, PORT, sheet } from './constants';
+import { downloadLatestSheetData } from './functions';
 import { setupSwagger } from './swagger.config';
 
 //#region app setup
@@ -14,51 +15,51 @@ setupSwagger(app, BASE_URL);
 
 //#region Google Sheets API Endpoints
 
+// /**
+//  * @swagger
+//  * /:
+//  *   post:
+//  *     summary: Append a new row to the sheet
+//  *     description: Appends a new row with the specified values to the Google Sheet
+//  *     tags: [Google Sheets]
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               values:
+//  *                 type: array
+//  *                 items:
+//  *                   type: string
+//  *     responses:
+//  *       '200':
+//  *         description: Successful append
+//  *       '400':
+//  *         description: Bad request
+//  */
+// app.post('/', async (req: Request, res: Response) => {
+//   await sheet.spreadsheets.values.append({
+//     spreadsheetId: GOOGLE_LIVE_SHEET_ID,
+//     auth: auth,
+//     range: 'A2:F2',
+//     valueInputOption: 'RAW',
+//     requestBody: {
+//       values: [['change', 'demon', 'excellent', 'fire']],
+//     },
+//   });
+
+//   return res.send({
+//     success: true,
+//     message: 'Sheet updated successfully',
+//     status: 200,
+//   });
+// });
+
 /**
  * @swagger
- * /:
- *   post:
- *     summary: Append a new row to the sheet
- *     description: Appends a new row with the specified values to the Google Sheet
- *     tags: [Google Sheets]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               values:
- *                 type: array
- *                 items:
- *                   type: string
- *     responses:
- *       '200':
- *         description: Successful append
- *       '400':
- *         description: Bad request
- */
-app.post('/', async (req: Request, res: Response) => {
-  await sheet.spreadsheets.values.append({
-    spreadsheetId: GOOGLE_LIVE_SHEET_ID,
-    auth: auth,
-    range: 'A2:F2',
-    valueInputOption: 'RAW',
-    requestBody: {
-      values: [['change', 'demon', 'excellent', 'fire']],
-    },
-  });
-
-  return res.send({
-    success: true,
-    message: 'Sheet updated successfully',
-    status: 200,
-  });
-});
-
-/**
- * @swagger
- * /:
+ * /range:
  *   get:
  *     summary: Get all entries from the sheet
  *     description: Retrieves all entries from the specified range of the Google Sheet
@@ -69,15 +70,16 @@ app.post('/', async (req: Request, res: Response) => {
  *       '400':
  *         description: Bad request
  */
-app.get('/', async (req: Request, res: Response) => {
-  const result = await sheet.spreadsheets.values.get({
-    spreadsheetId: GOOGLE_LIVE_SHEET_ID,
-    auth: auth,
-    range: 'A1:Z',
-    majorDimension: 'COLUMNS',
-  });
+app.get('/range', async (req: Request, res: Response) => {
+  // const result = await sheet.spreadsheets.values.get({
+  //   spreadsheetId: GOOGLE_LIVE_SHEET_ID,
+  //   auth: auth,
+  //   range: 'Single!A1:Z',
+  //   majorDimension: 'COLUMNS',
+  // });
 
-  return res.send({ data: result.data });
+  await downloadLatestSheetData('Double');
+  return res.sendStatus(200);
 });
 
 /**
@@ -104,51 +106,51 @@ app.get('/batch', async (req: Request, res: Response) => {
   return res.send({ data: result.data });
 });
 
-/**
- * @swagger
- * /:
- *   patch:
- *     summary: Update values in the sheet
- *     description: Updates the values in the specified range of the Google Sheet
- *     tags: [Google Sheets]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               range:
- *                 type: string
- *               values:
- *                 type: array
- *                 items:
- *                   type: array
- *                   items:
- *                     type: string
- *     responses:
- *       '200':
- *         description: Successful update
- *       '400':
- *         description: Bad request
- */
-app.patch('/', async (req: Request, res: Response) => {
-  await sheet.spreadsheets.values.update({
-    spreadsheetId: GOOGLE_LIVE_SHEET_ID,
-    auth: auth,
-    range: req.body.range,
-    valueInputOption: 'RAW',
-    requestBody: {
-      values: req.body.values,
-    },
-  });
+// /**
+//  * @swagger
+//  * /:
+//  *   patch:
+//  *     summary: Update values in the sheet
+//  *     description: Updates the values in the specified range of the Google Sheet
+//  *     tags: [Google Sheets]
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               range:
+//  *                 type: string
+//  *               values:
+//  *                 type: array
+//  *                 items:
+//  *                   type: array
+//  *                   items:
+//  *                     type: string
+//  *     responses:
+//  *       '200':
+//  *         description: Successful update
+//  *       '400':
+//  *         description: Bad request
+//  */
+// app.patch('/', async (req: Request, res: Response) => {
+//   await sheet.spreadsheets.values.update({
+//     spreadsheetId: GOOGLE_LIVE_SHEET_ID,
+//     auth: auth,
+//     range: req.body.range,
+//     valueInputOption: 'RAW',
+//     requestBody: {
+//       values: req.body.values,
+//     },
+//   });
 
-  return res.send({
-    success: true,
-    message: 'Sheet updated successfully',
-    status: 200,
-  });
-});
+//   return res.send({
+//     success: true,
+//     message: 'Sheet updated successfully',
+//     status: 200,
+//   });
+// });
 
 //#endregion
 
