@@ -12,7 +12,32 @@ app.use(express.urlencoded({ extended: true })); // For complex form data
 app.use(cors());
 setupSwagger(app, BASE_URL);
 
-// insert 'change' into a2, 'demon' into b2, 'excellent' into c2 and so on...
+//#region Google Sheets API Endpoints
+
+/**
+ * @swagger
+ * /:
+ *   post:
+ *     summary: Append a new row to the sheet
+ *     description: Appends a new row with the specified values to the Google Sheet
+ *     tags: [Google Sheets]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               values:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       '200':
+ *         description: Successful append
+ *       '400':
+ *         description: Bad request
+ */
 app.post('/', async (req: Request, res: Response) => {
   await sheet.spreadsheets.values.append({
     spreadsheetId: GOOGLE_LIVE_SHEET_ID,
@@ -31,7 +56,19 @@ app.post('/', async (req: Request, res: Response) => {
   });
 });
 
-// get all the entries by column from a to z
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Get all entries from the sheet
+ *     description: Retrieves all entries from the specified range of the Google Sheet
+ *     tags: [Google Sheets]
+ *     responses:
+ *       '200':
+ *         description: Successful retrieval
+ *       '400':
+ *         description: Bad request
+ */
 app.get('/', async (req: Request, res: Response) => {
   const result = await sheet.spreadsheets.values.get({
     spreadsheetId: GOOGLE_LIVE_SHEET_ID,
@@ -43,7 +80,19 @@ app.get('/', async (req: Request, res: Response) => {
   return res.send({ data: result.data });
 });
 
-// batch get
+/**
+ * @swagger
+ * /batch:
+ *   get:
+ *     summary: Get multiple ranges from the sheet
+ *     description: Retrieves values from multiple ranges in the Google Sheet
+ *     tags: [Google Sheets]
+ *     responses:
+ *       '200':
+ *         description: Successful retrieval
+ *       '400':
+ *         description: Bad request
+ */
 app.get('/batch', async (req: Request, res: Response) => {
   const result = await sheet.spreadsheets.values.batchGet({
     spreadsheetId: GOOGLE_LIVE_SHEET_ID,
@@ -55,7 +104,34 @@ app.get('/batch', async (req: Request, res: Response) => {
   return res.send({ data: result.data });
 });
 
-// update/insert ....
+/**
+ * @swagger
+ * /:
+ *   patch:
+ *     summary: Update values in the sheet
+ *     description: Updates the values in the specified range of the Google Sheet
+ *     tags: [Google Sheets]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               range:
+ *                 type: string
+ *               values:
+ *                 type: array
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *     responses:
+ *       '200':
+ *         description: Successful update
+ *       '400':
+ *         description: Bad request
+ */
 app.patch('/', async (req: Request, res: Response) => {
   await sheet.spreadsheets.values.update({
     spreadsheetId: GOOGLE_LIVE_SHEET_ID,
@@ -73,6 +149,8 @@ app.patch('/', async (req: Request, res: Response) => {
     status: 200,
   });
 });
+
+//#endregion
 
 //#region Server Setup
 
